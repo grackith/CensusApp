@@ -1,0 +1,246 @@
+---
+title: "shiny_stuff"
+author: "grace douglas"
+date: "3/10/2020"
+output: html_document
+---
+
+
+What I am going for.... (thank you karlrohe)
+```{r, eval = FALSE}
+
+#install.packages('shiny')
+#library(shiny)
+#runUrl( "http://pages.stat.wisc.edu/~karlrohe/ds479/code/census-app.zip")
+
+```
+
+Necessities
+```{r}
+
+#install.packages('UScensus2010')
+#install.packages(c("maps", "mapproj"))
+
+```
+
+Reading counties.rds
+```{r}
+
+counties = readRDS("data/counties.rds")
+head(counties)
+
+```
+
+Using helpers.R
+```{r}
+
+library(maps)
+library(mapproj)
+source("helpers.R")
+counties = readRDS("data/counties.rds")
+percent_map(counties$white, "darkgreen", "% White")
+
+```
+
+Loading Files and FilePaths
+```{r}
+
+source("helpers.R")
+counties = readRDS("data/counties.rds")
+
+```
+
+My turn! Sourcing data..
+```{r, eval=FALSE}
+
+library(maps)
+library(mapproj)
+source("helpers.R")
+counties <- readRDS("data/counties.rds")
+
+```
+
+ui.R
+```{r, eval = FALSE}
+
+# User interface ----
+ui <- fluidPage(
+  titlePanel("censusVis"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      helpText("Create demographic maps with 
+        information from the 2010 US Census."),
+      
+      selectInput("var", 
+                  label = "Choose a variable to display",
+                  choices = c("Percent White", "Percent Black",
+                              "Percent Hispanic", "Percent Asian"),
+                  selected = "Percent White"),
+      
+      sliderInput("range", 
+                  label = "Range of interest:",
+                  min = 0, max = 100, value = c(0, 100))
+    ),
+    
+    mainPanel(plotOutput("map"))
+  )
+)
+
+# Server logic ----
+server <- function(input, output) {
+  output$map <- renderPlot({
+    percent_map( # some arguments )
+  })
+}
+
+# Run app ----
+shinyApp(ui, server)
+
+```
+
+Finishing up the app
+```{r, eval = FALSE}
+
+server <- function(input, output) {
+  output$map <- renderPlot({
+    data <- switch(input$var, 
+                   "Percent White" = counties$white,
+                   "Percent Black" = counties$black,
+                   "Percent Hispanic" = counties$hispanic,
+                   "Percent Asian" = counties$asian)
+    
+    percent_map(var = data, color = ?, legend.title = ?, max = ?, min = ?)
+  })
+}
+
+```
+
+My turn, again!
+```{r, eval = FALSE}
+
+# Load packages ----
+library(shiny)
+library(maps)
+library(mapproj)
+
+# Load data ----
+counties <- readRDS("data/counties.rds")
+
+# Source helper functions -----
+source("helpers.R")
+
+# User interface ----
+ui <- fluidPage(
+  titlePanel("censusVis"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      helpText("Create demographic maps with 
+        information from the 2010 US Census."),
+      
+      selectInput("var", 
+                  label = "Choose a variable to display",
+                  choices = c("Percent White", "Percent Black",
+                              "Percent Hispanic", "Percent Asian"),
+                  selected = "Percent White"),
+      
+      sliderInput("range", 
+                  label = "Range of interest:",
+                  min = 0, max = 100, value = c(0, 100))
+    ),
+    
+    mainPanel(plotOutput("map"))
+  )
+)
+#############################################################################
+# Server logic ----
+#server <- function(input, output) {
+#  output$map <- renderPlot({
+#    data <- switch(input$var, 
+#                   "Percent White" = counties$white,
+#                   "Percent Black" = counties$black,
+#                   "Percent Hispanic" = counties$hispanic,
+#                   "Percent Asian" = counties$asian)
+#    
+#    color <- switch(input$var, 
+#                    "Percent White" = "darkgreen",
+#                    "Percent Black" = "black",
+#                    "Percent Hispanic" = "darkorange",
+#                    "Percent Asian" = "darkviolet")
+#    
+#    legend <- switch(input$var, 
+#                     "Percent White" = "% White",
+#                     "Percent Black" = "% Black",
+#                     "Percent Hispanic" = "% Hispanic",
+#                     "Percent Asian" = "% Asian")
+#    
+#    percent_map(data, color, legend, input$range[1], input$range[2])
+#  })
+#}
+#############################################################################
+
+#SERVER FUNCTION - more concisely
+server <- function(input, output) {
+  output$map <- renderPlot({
+    args <- switch(input$var,
+      "Percent White" = list(counties$white, "darkgreen", "% White"),
+      "Percent Black" = list(counties$black, "black", "% Black"),
+      "Percent Hispanic" = list(counties$hispanic, "darkorange", "% Hispanic"),
+      "Percent Asian" = list(counties$asian, "darkviolet", "% Asian"))
+        
+    args$min <- input$range[1]
+    args$max <- input$range[2]
+  
+    do.call(percent_map, args)
+  })
+}
+
+# Run app ----
+shinyApp(ui, server)
+
+```
+
+Final shiny app
+```{r, context = 'server', eval = FALSE}
+
+# Load packages ----
+library(shiny)
+library(maps)
+library(mapproj)
+
+# Load data ----
+counties <- readRDS("data/counties.rds")
+
+# Source helper functions -----
+source("helpers.R")
+
+# User interface ----
+ui <- fluidPage(
+  titlePanel("censusVis"),
+  
+  sidebarLayout(
+    sidebarPanel(
+      helpText("Create demographic maps with 
+        information from the 2010 US Census."),
+      
+      selectInput("var", 
+                  label = "Choose a variable to display",
+                  choices = c("Percent White", "Percent Black",
+                              "Percent Hispanic", "Percent Asian"),
+                  selected = "Percent White"),
+      
+      sliderInput("range", 
+                  label = "Range of interest:",
+                  min = 0, max = 100, value = c(0, 100))
+    ),
+    
+    mainPanel(plotOutput("map"))
+  )
+)
+
+# Run app ----
+shinyApp(ui, server)
+
+```
+
